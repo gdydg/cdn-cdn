@@ -1,0 +1,37 @@
+# .github/workflows/main.yml
+
+name: Update Huawei Cloud Preferred IPs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *' # 每小时运行一次
+
+jobs:
+  update-dns:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # 安装 requests 和华为云 SDK
+          pip install requests huaweicloudsdkcore==3.1.93 huaweicloudsdkdns==3.1.93
+
+      - name: Run IP Update Script
+        env:
+          # 将 GitHub Secrets 传递给 Python 脚本作为环境变量
+          HUAWEI_CLOUD_AK: ${{ secrets.HUAWEI_CLOUD_AK }}
+          HUAWEI_CLOUD_SK: ${{ secrets.HUAWEI_CLOUD_SK }}
+          HUAWEI_CLOUD_PROJECT_ID: ${{ secrets.HUAWEI_CLOUD_PROJECT_ID }}
+          HUAWEI_CLOUD_ZONE_NAME: ${{ secrets.HUAWEI_CLOUD_ZONE_NAME }}
+          DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
+          MAX_IPS: ${{ secrets.MAX_IPS }}
+        run: python update_ips1.py
