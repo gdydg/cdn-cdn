@@ -26,7 +26,7 @@ DOMAIN_NAME = os.environ.get('DOMAIN_NAME')
 MAX_IPS = os.environ.get('MAX_IPS')
 
 # --- 优选 IP 的 API 地址 ---
-IP_API_URL = 'https://raw.githubusercontent.com/hubbylei/bestcf/main/bestcf.txt'
+IP_API_URL = 'https://addressesapi.090227.xyz/ip.164746.xyz'
 
 # --- 全局变量 ---
 dns_client = None
