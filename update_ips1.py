@@ -162,7 +162,7 @@ def create_dns_record_set(ip_list):
             name=DOMAIN_NAME + ".",
             type="A",
             records=ip_list,
-            ttl=1,
+            ttl=300,
         )
         # 再将 line 作为对象的属性来设置
         body.line = "default"
