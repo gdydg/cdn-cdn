@@ -154,7 +154,7 @@ def update_dns_record_set(record_id, ip_list):
     try:
         # 更新记录只需要提供 TTL 和 IP 列表
         body = UpdateRecordSetReq(
-            ttl=1,
+            ttl=300,
             records=ip_list
         )
         request = UpdateRecordSetRequest()
@@ -179,7 +179,7 @@ def create_dns_record_set(ip_list, line_code):
             name=DOMAIN_NAME + ".", 
             type="A", 
             records=ip_list, 
-            ttl=1,
+            ttl=300,
             line=line_code
         )
         
