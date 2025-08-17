@@ -5,7 +5,7 @@ name: Update Huawei Cloud Preferred IPs
 on:
   workflow_dispatch:
   schedule:
-    - cron: '30 * * * *' # 每小时运行一次
+    - cron: '0,30 * * * *' # 每小时运行一次
 
 jobs:
   update-dns:
