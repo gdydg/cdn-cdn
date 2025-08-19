@@ -27,9 +27,9 @@ DOMAIN_NAME = os.environ.get('DOMAIN_NAME')
 # 脚本会读取每个 API 返回内容的第一行作为对应线路的 CNAME 目标
 API_CONFIG = {
     # 线路名称: (线路ID, API地址)
-    "电信": ("dianxin", 'https://example.com/telecom_cname.txt'),
-    "联通": ("liantong", 'https://example.com/unicom_cname.txt'),
-    "移动": ("yidong", 'https://example.com/mobile_cname.txt')
+    "电信": ("dianxin", 'https://raw.githubusercontent.com/gdydg/cdn-cdn/refs/heads/main/cname.txt'),
+    "联通": ("liantong", 'https://raw.githubusercontent.com/gdydg/cdn-cdn/refs/heads/main/cname.txt'),
+    "移动": ("yidong", 'https://raw.githubusercontent.com/gdydg/cdn-cdn/refs/heads/main/cname.txt')
 }
 
 # --- 全局变量 ---
