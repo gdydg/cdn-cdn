@@ -27,9 +27,9 @@ DOMAIN_NAME = os.environ.get('DOMAIN_NAME')
 # 脚本会读取每个 API 返回内容的第一行作为对应线路的 CNAME 目标
 API_CONFIG = {
     # 线路名称: (线路ID, API地址)
-    "电信": ("dianxin", 'https://raw.githubusercontent.com/gdydg/cdn-cdn/refs/heads/main/cname.txt'),
-    "联通": ("liantong", 'https://raw.githubusercontent.com/gdydg/cdn-cdn/refs/heads/main/cname.txt'),
-    "移动": ("yidong", 'https://raw.githubusercontent.com/gdydg/cdn-cdn/refs/heads/main/cname.txt')
+    "电信": ("dianxin", 'https://example.com/telecom_cname.txt'),
+    "联通": ("liantong", 'https://example.com/unicom_cname.txt'),
+    "移动": ("yidong", 'https://example.com/mobile_cname.txt')
 }
 
 # --- 全局变量 ---
@@ -105,11 +105,15 @@ def get_existing_records_by_line(line_id):
     """获取指定线路上已存在的 A 或 CNAME 记录"""
     print(f"正在查询线路 '{line_id}' 上域名 {DOMAIN_NAME} 的现有 A 和 CNAME 记录...")
     try:
+        # ★★★ 关键修复点 ★★★
+        # ListRecordSetsByZoneRequest 的构造函数不直接接受 line 参数
+        # 需要先创建对象，再为其属性赋值
         request = ListRecordSetsByZoneRequest(
             zone_id=zone_id,
-            name=DOMAIN_NAME + ".",
-            line=line_id
+            name=DOMAIN_NAME + "."
         )
+        request.line = line_id
+        
         response = dns_client.list_record_sets_by_zone(request)
         
         # 过滤出 A 和 CNAME 记录
