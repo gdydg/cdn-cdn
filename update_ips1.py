@@ -26,7 +26,7 @@ DOMAIN_NAME = os.environ.get('DOMAIN_NAME')
 MAX_IPS = os.environ.get('MAX_IPS')
 
 # --- 优选 IP 的 API 地址 ---
-IP_API_URL = 'https://addressesapi.090227.xyz/ip.164746.xyz'
+IP_API_URL = 'https://raw.githubusercontent.com/hubbylei/bestcf/main/bestcf.txt'
 
 # --- 全局变量 ---
 dns_client = None
@@ -162,7 +162,7 @@ def create_dns_record_set(ip_list):
             name=DOMAIN_NAME + ".",
             type="A",
             records=ip_list,
-            ttl=300,
+            ttl=60,
         )
         # 再将 line 作为对象的属性来设置
         body.line = "default"
