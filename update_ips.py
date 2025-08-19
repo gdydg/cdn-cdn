@@ -26,9 +26,9 @@ MAX_IPS = os.environ.get('MAX_IPS')
 
 # --- 优选 IP 的 API 地址 (请直接在此处修改) ---
 IP_API_URLS = {
-    "Yidong": "https://addressesapi.090227.xyz/ip.164746.xyz",    # 移动线路 API
-    "Dianxin": "https://addressesapi.090227.xyz/ip.164746.xyz", # 电信线路 API
-    "Liantong": "https://addressesapi.090227.xyz/ip.164746.xyz" # 联通线路 API
+    "Yidong": "https://ipdb.api.030101.xyz/?type=bestcf&country=true",    # 移动线路 API
+    "Dianxin": "https://raw.githubusercontent.com/gdydg/ip/refs/heads/main/ctcc.txt", # 电信线路 API
+    "Liantong": "https://raw.githubusercontent.com/gdydg/ip/refs/heads/main/cucc.txt" # 联通线路 API
 }
 
 # --- 定义运营商线路 ---
@@ -154,7 +154,7 @@ def update_dns_record_set(record_id, ip_list):
     try:
         # 更新记录只需要提供 TTL 和 IP 列表
         body = UpdateRecordSetReq(
-            ttl=300,
+            ttl=60,
             records=ip_list
         )
         request = UpdateRecordSetRequest()
@@ -179,7 +179,7 @@ def create_dns_record_set(ip_list, line_code):
             name=DOMAIN_NAME + ".", 
             type="A", 
             records=ip_list, 
-            ttl=300,
+            ttl=60,
             line=line_code
         )
         
