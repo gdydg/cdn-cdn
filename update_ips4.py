@@ -113,7 +113,6 @@ def get_existing_records_by_line(line_id):
         
         response = dns_client.list_record_sets_by_zone(request)
         
-        # ★★★ 关键修复点 ★★★
         # 增加严格的客户端线路匹配，防止 API 返回非指定线路的记录 (如默认线路)
         # 确保返回的记录的 line 属性与我们查询的 line_id 完全一致
         filtered_records = [
@@ -142,13 +141,16 @@ def create_cname_record(line_id, cname_target):
     """为指定线路创建一条 CNAME 解析记录"""
     print(f"准备为线路 '{line_id}' 创建 CNAME 记录，指向 {cname_target}...")
     try:
+        # ★★★ 关键修复点 ★★★
+        # 先创建 body 对象，不传入 line 参数
         body = CreateRecordSetRequestBody(
             name=DOMAIN_NAME + ".",
             type="CNAME",
             records=[cname_target],
-            ttl=60,
-            line=line_id
+            ttl=60
         )
+        # 再将 line 作为对象的属性来设置
+        body.line = line_id
         
         request = CreateRecordSetRequest(zone_id=zone_id, body=body)
         dns_client.create_record_set(request)
