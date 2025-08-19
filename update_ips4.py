@@ -105,9 +105,6 @@ def get_existing_records_by_line(line_id):
     """获取指定线路上已存在的 A 或 CNAME 记录"""
     print(f"正在查询线路 '{line_id}' 上域名 {DOMAIN_NAME} 的现有 A 和 CNAME 记录...")
     try:
-        # ★★★ 关键修复点 ★★★
-        # ListRecordSetsByZoneRequest 的构造函数不直接接受 line 参数
-        # 需要先创建对象，再为其属性赋值
         request = ListRecordSetsByZoneRequest(
             zone_id=zone_id,
             name=DOMAIN_NAME + "."
@@ -116,11 +113,16 @@ def get_existing_records_by_line(line_id):
         
         response = dns_client.list_record_sets_by_zone(request)
         
-        # 过滤出 A 和 CNAME 记录
-        records_to_delete = [r for r in response.recordsets if r.type in ["A", "CNAME"]]
+        # ★★★ 关键修复点 ★★★
+        # 增加严格的客户端线路匹配，防止 API 返回非指定线路的记录 (如默认线路)
+        # 确保返回的记录的 line 属性与我们查询的 line_id 完全一致
+        filtered_records = [
+            r for r in response.recordsets 
+            if r.type in ["A", "CNAME"] and hasattr(r, 'line') and r.line == line_id
+        ]
         
-        print(f"查询到 {len(records_to_delete)} 条已存在的 A 或 CNAME 记录。")
-        return records_to_delete
+        print(f"查询并严格匹配后，找到 {len(filtered_records)} 条【{line_id}】线路的 A 或 CNAME 记录。")
+        return filtered_records
     except exceptions.ClientRequestException as e:
         print(f"错误: 查询线路 '{line_id}' 的 DNS 记录时发生错误: {e}")
         return []
@@ -177,7 +179,7 @@ def main():
             print(f"未能为【{line_name}】线路获取 CNAME 目标，跳过此线路。")
             continue
 
-        # 2. 获取并删除该线路上的旧记录
+        # 2. 获取该线路上已存在的记录
         existing_records = get_existing_records_by_line(line_id)
         
         # 检查是否需要更新 (如果记录已存在且目标相同，则跳过)
