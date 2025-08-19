@@ -30,5 +30,6 @@ ok,变量配置成功，到action里面启动工作流，这样你的优选域�
 
 ### 自定义选项
 
-- 这里展示了A记录的添加，cname的方式只需到工作流文件修改最后一行的运行文件就行，1是全网默认A记录，2是三网优化A记录，3是全网默认cname记录，4是三网优化cname记录。（cron触发器设置也是在工作流文件）
+- 这里展示了A记录的添加，cname的方式只需到工作流文件修改最后一行的运行文件就行，update_ips1.py是全网默认A记录，update_ips2.py是三网优化A记录，update_ips3.py是全网默认cname记录，update_ips4.py是三网优化cname记录。（cron触发器设置也是在工作流文件）
+- update_ips3.py和update_ips4.py里面优选cname的API脚本会从您指定的 API 地址获取内容，并将第一行作为 CNAME 的目标地址来进行后续的 DNS 更新操作。
 - 可到py文件修改你的API和cname的优选域名，ttl,权重等等。
