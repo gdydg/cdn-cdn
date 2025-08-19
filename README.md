@@ -1,7 +1,6 @@
 ## 成果展示
 这个吃API质量
-<img src="https://freeimage.host/i/FpS21EP" alt="ikun" width=100% />
-
+![屏幕截图 2025-08-15 115156.png](https://img.imgdd.com/277d1362-9c64-43e7-aa48-590001d8d705.png)
 
 
 ## 项目介绍
