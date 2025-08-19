@@ -46,6 +46,8 @@ https://addressesapi.090227.xyz/CloudFlareYes
 
 https://addressesapi.090227.xyz/ip.164746.xyz
 
+https://raw.githubusercontent.com/ZhiXuanWang/cf-speed-dns/refs/heads/main/ipTop10.html(用在本项目得改返回格式）
+
 我自己抓取微测网：
 
 https://raw.githubusercontent.com/gdydg/ip/refs/heads/main/ctcc.txt（电信）
