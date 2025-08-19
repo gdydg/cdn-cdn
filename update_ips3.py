@@ -24,7 +24,7 @@ DOMAIN_NAME = os.environ.get('DOMAIN_NAME')
 
 # --- 优选 CNAME 的 API 地址 ---
 # 脚本会读取这个 API 返回内容的第一行作为 CNAME 目标
-CNAME_API_URL = 'https://raw.githubusercontent.com/gdydg/cdn-cdn/refs/heads/main/cname.txt' # <-- 请将这里替换为您的 API 地址
+CNAME_API_URL = 'https://raw.githubusercontent.com/gdydg/ip/refs/heads/main/ct.txt' # <-- 请将这里替换为您的 API 地址
 
 # --- 全局变量 ---
 dns_client = None
