@@ -34,4 +34,4 @@ jobs:
           HUAWEI_CLOUD_ZONE_NAME: ${{ secrets.HUAWEI_CLOUD_ZONE_NAME }}
           DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
           MAX_IPS: ${{ secrets.MAX_IPS }}
-        run: python update_ips1.py
+        run: python update_ips2.py
