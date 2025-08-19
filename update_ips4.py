@@ -16,9 +16,9 @@ DOMAIN_NAME = os.environ.get('DOMAIN_NAME')
 
 # --- 三网 API 地址 ---
 IP_API_URLS = {
-    "Yidong": "https://raw.githubusercontent.com/gdydg/cdn-cdn/refs/heads/main/cname.txt",    # 移动线路 API
-    "Dianxin": "https://raw.githubusercontent.com/gdydg/cdn-cdn/refs/heads/main/cname.txt",   # 电信线路 API
-    "Liantong": "https://raw.githubusercontent.com/gdydg/cdn-cdn/refs/heads/main/cname.txt"   # 联通线路 API
+    "Yidong": "https://raw.githubusercontent.com/gdydg/ip/refs/heads/main/cm.txt",    # 移动线路 API
+    "Dianxin": "https://raw.githubusercontent.com/gdydg/ip/refs/heads/main/cu.txt",   # 电信线路 API
+    "Liantong": "https://raw.githubusercontent.com/gdydg/ip/refs/heads/main/ct.txt"   # 联通线路 API
 }
 
 # --- 三网线路代码 ---
