@@ -27,9 +27,9 @@ DOMAIN_NAME = os.environ.get('DOMAIN_NAME')
 # 脚本会读取每个 API 返回内容的第一行作为对应线路的 CNAME 目标
 API_CONFIG = {
     # 线路名称: (线路ID, API地址)
-    "电信": ("dianxin", 'https://raw.githubusercontent.com/gdydg/cdn-cdn/refs/heads/main/cname.txt'),
-    "联通": ("liantong", 'https://raw.githubusercontent.com/gdydg/cdn-cdn/refs/heads/main/cname.txt'),
-    "移动": ("yidong", 'https://raw.githubusercontent.com/gdydg/cdn-cdn/refs/heads/main/cname.txt')
+    "电信": ("dianxin", 'https://example.com/telecom_cname.txt'),
+    "联通": ("liantong", 'https://example.com/unicom_cname.txt'),
+    "移动": ("yidong", 'https://example.com/mobile_cname.txt')
 }
 
 # --- 全局变量 ---
@@ -101,29 +101,21 @@ def get_cname_target_from_api(api_url):
         print(f"错误: 请求优选 CNAME 时发生错误: {e}")
         return None
 
-def get_existing_records_by_line(line_id):
-    """获取指定线路上已存在的 A 或 CNAME 记录"""
-    print(f"正在查询线路 '{line_id}' 上域名 {DOMAIN_NAME} 的现有 A 和 CNAME 记录...")
+def get_all_existing_cname_records():
+    """获取指定域名下所有的 CNAME 记录，不区分线路"""
+    print(f"正在查询域名 {DOMAIN_NAME} 的所有现有 CNAME 记录...")
     try:
         request = ListRecordSetsByZoneRequest(
             zone_id=zone_id,
-            name=DOMAIN_NAME + "."
+            name=DOMAIN_NAME + ".",
+            type="CNAME"
         )
-        request.line = line_id
-        
         response = dns_client.list_record_sets_by_zone(request)
         
-        # 增加严格的客户端线路匹配，防止 API 返回非指定线路的记录 (如默认线路)
-        # 确保返回的记录的 line 属性与我们查询的 line_id 完全一致
-        filtered_records = [
-            r for r in response.recordsets 
-            if r.type in ["A", "CNAME"] and hasattr(r, 'line') and r.line == line_id
-        ]
-        
-        print(f"查询并严格匹配后，找到 {len(filtered_records)} 条【{line_id}】线路的 A 或 CNAME 记录。")
-        return filtered_records
+        print(f"查询到 {len(response.recordsets)} 条已存在的 CNAME 记录。")
+        return response.recordsets
     except exceptions.ClientRequestException as e:
-        print(f"错误: 查询线路 '{line_id}' 的 DNS 记录时发生错误: {e}")
+        print(f"错误: 查询所有 CNAME 记录时发生错误: {e}")
         return []
 
 def delete_dns_record(record):
@@ -131,7 +123,7 @@ def delete_dns_record(record):
     try:
         request = DeleteRecordSetRequest(zone_id=zone_id, recordset_id=record.id)
         dns_client.delete_record_set(request)
-        print(f"成功删除旧的 {record.type} 记录: {record.id} (线路: {record.line}, 值: {record.records[0]})")
+        print(f"成功删除旧的 {record.type} 记录: {record.id} (线路: {getattr(record, 'line', 'N/A')}, 值: {record.records[0]})")
         return True
     except exceptions.ClientRequestException as e:
         print(f"错误: 删除记录 {record.id} 时失败: {e}")
@@ -141,15 +133,12 @@ def create_cname_record(line_id, cname_target):
     """为指定线路创建一条 CNAME 解析记录"""
     print(f"准备为线路 '{line_id}' 创建 CNAME 记录，指向 {cname_target}...")
     try:
-        # ★★★ 关键修复点 ★★★
-        # 先创建 body 对象，不传入 line 参数
         body = CreateRecordSetRequestBody(
             name=DOMAIN_NAME + ".",
             type="CNAME",
             records=[cname_target],
             ttl=60
         )
-        # 再将 line 作为对象的属性来设置
         body.line = line_id
         
         request = CreateRecordSetRequest(zone_id=zone_id, body=body)
@@ -162,7 +151,7 @@ def create_cname_record(line_id, cname_target):
 
 def main():
     """主执行函数"""
-    print("--- 开始更新华为云三网优化 CNAME 解析记录 ---")
+    print("--- 开始更新华为云三网优化 CNAME 解析记录 (批量删除后创建) ---")
     
     if not DOMAIN_NAME:
         print("错误: 缺少必要的 DOMAIN_NAME 环境变量。")
@@ -172,40 +161,46 @@ def main():
         print("华为云客户端初始化或 Zone ID 获取失败，任务终止。")
         return
 
+    # 1. 从所有 API 获取新的 CNAME 目标
+    print("\n--- 步骤 1: 从 API 获取所有线路的目标 CNAME ---")
+    new_targets = {}
     for line_name, (line_id, api_url) in API_CONFIG.items():
-        print(f"\n{'='*20} 开始处理【{line_name}】线路 {'='*20}")
-
-        # 1. 从 API 获取新的 CNAME 目标
-        new_cname_target = get_cname_target_from_api(api_url)
-        if not new_cname_target:
-            print(f"未能为【{line_name}】线路获取 CNAME 目标，跳过此线路。")
-            continue
-
-        # 2. 获取该线路上已存在的记录
-        existing_records = get_existing_records_by_line(line_id)
-        
-        # 检查是否需要更新 (如果记录已存在且目标相同，则跳过)
-        is_already_updated = False
-        if len(existing_records) == 1 and existing_records[0].type == "CNAME" and existing_records[0].records[0] == new_cname_target:
-             print(f"【{line_name}】线路记录已是最新，无需更新。")
-             is_already_updated = True
-        
-        if is_already_updated:
-            continue
-
-        if existing_records:
-            print(f"--- 开始删除【{line_name}】线路的旧记录 ---")
-            for record in existing_records:
-                delete_dns_record(record)
-        
-        # 3. 创建新的 CNAME 记录
-        print(f"--- 开始为【{line_name}】线路创建新记录 ---")
-        if create_cname_record(line_id, new_cname_target):
-            print(f"--- 【{line_name}】线路更新成功 ---")
+        print(f"正在获取【{line_name}】线路的目标...")
+        target = get_cname_target_from_api(api_url)
+        if target:
+            new_targets[line_id] = target
         else:
-            print(f"--- 【{line_name}】线路更新失败 ---")
+            print(f"警告: 未能为【{line_name}】线路获取 CNAME 目标，将跳过此线路的创建。")
 
+    if not new_targets:
+        print("错误: 未能从任何 API 获取到有效的 CNAME 目标，任务终止。")
+        return
+
+    # 2. 获取并删除该域名下所有的旧 CNAME 记录
+    print(f"\n--- 步骤 2: 删除域名 {DOMAIN_NAME} 下所有已存在的 CNAME 记录 ---")
+    existing_records = get_all_existing_cname_records()
+    if existing_records:
+        for record in existing_records:
+            delete_dns_record(record)
+    else:
+        print("没有需要删除的旧 CNAME 记录。")
+
+    # 3. 依次创建新的 CNAME 记录
+    print(f"\n--- 步骤 3: 为各线路创建新的 CNAME 记录 ---")
+    success_count = 0
+    failure_count = 0
+    for line_id, cname_target in new_targets.items():
+        # 通过 line_id 反查 line_name 用于打印日志
+        line_name = next((k for k, v in API_CONFIG.items() if v[0] == line_id), "未知")
+        print(f"--- 正在为【{line_name}】({line_id}) 线路创建记录 ---")
+        if create_cname_record(line_id, cname_target):
+            success_count += 1
+        else:
+            failure_count += 1
+
+    # 4. 总结报告
     print(f"\n{'='*20} 所有线路处理完毕 {'='*20}")
+    print(f"总结: 成功 {success_count} 条, 失败 {failure_count} 条。")
 
 
 if __name__ == '__main__':
